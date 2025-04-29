@@ -1,0 +1,63 @@
+model:
+  name: blindspot
+  num_layers: 9
+  embed_dim: 48
+  kernel_size: 25
+  input_sigma: true
+  blindspot: true
+  use_bn: true
+  dilation: 1
+
+train:
+  batch_size: 128
+  ep: 10
+  debug: 0
+  workers: 24
+  # wb_per_ep: 50
+  # grad_clip: 1.0
+
+loss: 
+  name: 'T1'
+  T2: 0
+  S2: 0
+  LvG2: 0
+
+opt:
+  type: 'adam'
+  lr: 0.0005
+  lr_sch: plateau
+  factor: 0.8
+  patience: 50
+
+
+data:
+  # file_path: '/datascope/subaru/user/swei20/data_gh/bosz50000/train_ae_100k_train_mp/dataset.h5'
+  # # test_path: '/datascope/subaru/user/swei20/data/train_ae_100k_valid/dataset.h5'
+  # val_path:  '/datascope/subaru/user/swei20/data_gh/bosz50000/train_ae_1k_valid_mp/dataset.h5'
+  # test_path: '/datascope/subaru/user/swei20/data_gh/bosz50000/train_ae_100k_valid_mp/dataset.h5'
+
+  file_path: '/datascope/subaru/user/swei20/data/bosz50000/test/mag215/train_100k/dataset.h5'
+  # file_path : '/datascope/subaru/user/swei20/data/bosz50000/mag215/train_100k/dataset.h5'
+  val_path: '/datascope/subaru/user/swei20/data/bosz50000/mag215/train_1k/dataset.h5'
+  test_path: '/datascope/subaru/user/swei20/data/bosz50000/mag215/val_1k/dataset.h5'
+
+  # file_path : '/datascope/subaru/user/swei20/data/bosz50000/mag22z1/train_100k/dataset.h5'
+  # val_path: '/datascope/subaru/user/swei20/data/bosz50000/mag22z1/train_1k/dataset.h5'
+  # test_path: '/datascope/subaru/user/swei20/data/bosz50000/mag22z1/val_1k/dataset.h5'
+
+
+  # file_path: '/datascope/subaru/user/swei20/data/bosz50000/mag23/train_100k/dataset.h5'
+  # val_path: '/datascope/subaru/user/swei20/data/bosz50000/mag23/train_1k/dataset.h5'
+  # test_path: '/datascope/subaru/user/swei20/data/bosz50000/mag23/val_1k/dataset.h5'
+  # file_path: '/home/viska/SirenSpec/data/spec100k.h5'
+  num_samples: 100000
+  num_test_samples: 1000
+  
+mask:
+  mask_ratio: 1
+  # lvrg_num: 30
+
+noise:
+  noise_level: 1
+
+project: 'blindspot-test'

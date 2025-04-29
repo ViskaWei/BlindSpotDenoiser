@@ -1,0 +1,39 @@
+model:
+  name: blindspot
+  num_layers: 9
+  embed_dim: 48
+  kernel_size: 25
+  input_sigma: true
+  blindspot: true
+  use_bn: true
+
+train:
+  batch_size: 128
+  ep: 1
+  debug: 0
+  workers: 24
+
+loss: 
+  name: 'T1'
+
+opt:
+  type: 'adam'
+  lr: 0.001
+  lr_sch: plateau
+  factor: 0.8
+  patience: 2
+
+data:
+  file_path: '/datascope/subaru/user/swei20/data/bosz50000/test/mag215/train_100k/dataset.h5'
+  val_path: '/datascope/subaru/user/swei20/data/bosz50000/mag215/train_1k/dataset.h5'
+  test_path: '/datascope/subaru/user/swei20/data/bosz50000/mag215/val_1k/dataset.h5'
+  num_samples: 1000
+  num_test_samples: 1000
+
+mask:
+  mask_ratio: 0.85
+
+noise:
+  noise_level: 1
+
+project: 'blindspot-test'
