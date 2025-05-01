@@ -85,9 +85,10 @@ class Conv1D(nn.Module):
     def forward(self, x):
         return self.act(self.bn(self.conv(x)))
 
-class BlindspotConv1D(Conv1D):
+class CausalConv1D(Conv1D):
     def forward(self, x): # Blindspot by padding only on the left
-        return self.act(self.bn(self.conv(F.pad(x, (self.ofs, 0)))[:, :, :-self.ofs]))
+        x = self.conv(F.pad(x, (self.ofs, 0)))[:, :, :-self.ofs]
+        return self.act(self.bn(x))
 
 class BlindspotModel1D(BaseModel):
     init_params = ['input_channels', 'output_channels', 'num_layers', 'embed_dim', 'kernel_size', 'input_sigma', 'use_bn', 'blindspot', 'dilation', 'loss_config']
@@ -104,7 +105,7 @@ class BlindspotModel1D(BaseModel):
         loss_name = loss_config.get('name', 'T1')
         name = f'b{int(blindspot)}_l{num_layers}_e{embed_dim}_k{kernel_size}_s{int(input_sigma)}_bn{int(use_bn)}_d{dilation}'
         super(BlindspotModel1D, self).__init__(model_name=name, loss_name=loss_name)
-        conv_class = BlindspotConv1D if blindspot else Conv1D
+        conv_class = CausalConv1D if blindspot else Conv1D
         first_layer_class = conv_class
         unet_bn = use_bn
         self.encoders = nn.ModuleList([first_layer_class(self.input_channels, embed_dim, kernel_size=kernel_size, dilation=1, use_bn=unet_bn)] + 
@@ -284,8 +285,8 @@ class SpecLModule(BaseLightningModule):
             if not self.fix_sigma:
                 self.noise_estimator = BlindspotModel1D.from_config_to_noise_estimator(model_config=config.get('model', {}))
             return BlindspotModel1D.from_config(model_config=model_config, loss_config =config.get('loss', {}))
-        elif model_name == 'ae':
-            return AE.from_config(model_config)
+        # elif model_name == 'ae':
+        #     return AE.from_config(model_config)
     
     def forward(self, noisy, flux, error_nl, loss_only=False):
         outputs = self.model(noisy)
@@ -416,11 +417,6 @@ class BlindspotLModule(SpecLModule):
         sigma_noise = None if self.fix_sigma else self.noise_estimator(noisy)
         return self.model.compute_loss(noisy, outputs, sigma_noise=sigma_noise, labels=(flux, error), loss_only=loss_only)
     
-class BlindspotSigmaLModule(SpecLModule):
-    def forward(self, noisy, flux, error, loss_only=False):
-        inputs = torch.cat([noisy.unsqueeze(1), error.unsqueeze(1)], dim=1) if self.input_sigma else noisy
-        outputs = self.model(inputs)      
-        return self.model.compute_loss(noisy, outputs, sigma_noise=error, labels=(flux, error), loss_only=loss_only)
 #endregion --TRAINER-----------------------------------------------------------
 
 import lightning as L

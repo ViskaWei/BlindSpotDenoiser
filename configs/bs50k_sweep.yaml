@@ -1,0 +1,93 @@
+program: scripts/sweep.py
+method: grid
+metric:
+  name: val/snr # rmse_loss
+  goal: maximize
+project: 'mag215'
+
+parameters:
+  model:
+    parameters:
+      name: 
+        value: blindspot
+      num_layers: 
+        values: [11, 9]
+      embed_dim: 
+        values: [24, 48, 96]
+      kernel_size:
+        values: [25, 45, 65]
+      input_sigma:
+        values: [true]
+      blindspot:
+        values: [true, false]
+      dilation:
+        values: [1, 2]
+      use_bn:
+        values: [true]
+      
+
+  train:
+    parameters:
+      batch_size: 
+        value: 128
+      ep: 
+        value: 200
+      gpus:
+        value: 1
+      workers:
+        value: 24
+
+  opt:
+    parameters:
+      type: 
+        value: 'adam'
+      lr: 
+        values: [0.0005]
+      lr_sch: 
+        value: plateau
+      factor: 
+        value: 0.8
+      patience:
+        value: 20
+
+
+  loss:
+    parameters:
+      name: 
+        values: ['T1']
+      T2:
+        values: [0]
+      LvG2:
+        values: [0]
+
+  data:
+    parameters:
+      file_path: 
+        value: '/datascope/subaru/user/swei20/data/bosz50000/mag215/train_100k/dataset.h5'
+      val_path: 
+        value: '/datascope/subaru/user/swei20/data/bosz50000/mag215/train_1k/dataset.h5'
+      test_path:
+        value: '/datascope/subaru/user/swei20/data/bosz50000/mag215/val_1k/dataset.h5'
+      num_samples: 
+        value: 100000 #0.0348
+      num_test_samples:
+        value: 1000
+      indices:
+        value: [31, 85]
+
+  mask:
+    parameters:
+      mask_ratio: 
+        values: [0.85, 1, 0.95]
+      # lvrg_num:
+        # values: [30, 16, 9, 4]  #K,Mg,Ca 2| Fe | Na| All
+
+  noise:
+    parameters:
+      noise_level:
+        values: [1]
+
+early_terminate:
+  type: hyperband
+  min_iter: 3
+
