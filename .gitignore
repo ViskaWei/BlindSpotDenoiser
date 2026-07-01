@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Generated figures (reproduce with scripts/render_current_paper_figs.py)
+reproduced_figs/
+
+# Training / experiment outputs
+checkpoints/
+lightning_logs/
+wandb/
+*.ckpt
+
+# Large data artifacts (canonical data lives on the survey compute cluster)
+*.h5
+
+# OS
+.DS_Store

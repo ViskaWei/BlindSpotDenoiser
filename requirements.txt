@@ -1,0 +1,21 @@
+# Core numerical / IO
+numpy
+pandas
+scipy
+h5py
+pyyaml
+
+# Model + training
+torch
+pytorch-lightning
+tqdm
+
+# Downstream log g estimator + classical baselines
+scikit-learn
+
+# Plotting (figure reproduction)
+matplotlib
+seaborn
+
+# Optional: experiment tracking during training only
+# wandb

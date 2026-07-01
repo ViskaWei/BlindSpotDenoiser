@@ -1,0 +1,55 @@
+# M1a v3 paper-canonical template for mag 20.5-22.5.
+# Synced from volta04:/home/swei20/BlindSpot_ablation/configs on 2026-04-28.
+
+model:
+  name: blindspot
+  num_layers: 9
+  embed_dim: 48
+  kernel_size: 25
+  input_sigma: true
+  blindspot: true
+  norm_type: 'bn'
+  sigma_input_mode: 'L0'
+  output_mode: 'mu'
+  use_identity_residual: false
+  residual_gain: 1.0
+  residual_gain_ramp_epochs: null
+  use_continuum_marginalize: false
+
+train:
+  batch_size: 128
+  ep: 200
+  debug: 0
+  workers: 24
+  early_stop_patience: 30
+  ckpt_dir: '/home/swei20/BlindSpot_ablation/checkpoints_M1a_mag205_225'
+  seed: 0
+  divergence_threshold: null
+
+loss:
+  name: 'M1'
+  huber_delta: 0.03
+  lam_neg: 1.0
+  target: 'noisy'
+
+opt:
+  type: 'adam'
+  lr: 0.0001
+  lr_sch: cosine
+  T_max: 200
+  eta_min: 0.000001
+
+data:
+  file_path: '/datascope/subaru/user/swei20/data/bosz50000/z1/mag205_225_lowT_1M/train_200k_0/dataset.h5'
+  val_path: '/datascope/subaru/user/swei20/data/bosz50000/z1/mag205_225_lowT_1M/test_1k_0/dataset.h5'
+  test_path: '/datascope/subaru/user/swei20/data/bosz50000/z1/mag205_225_lowT_1M/test_1k_1/dataset.h5'
+  num_samples: 200000
+  num_test_samples: 1000
+
+mask:
+  mask_ratio: 0.85
+
+noise:
+  noise_level: 1
+
+project: 'blindspot-ablation'

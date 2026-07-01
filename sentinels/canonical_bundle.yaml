@@ -1,0 +1,113 @@
+# BlindSpot paper sentinel bundle — canonical z1/test_10k_1 numbers (2026-06-21)
+#
+# 每个 sentinel: id / value / claim / source(volta04 真源) / regex(从 tex 抽该数字, 必须有 1 个 capture group)
+# verify_sentinels.py 用 regex 从 main.tex (+ thesis ch08) 抽出该数字, 与 value 比较, 漂移即 FAIL。
+#
+# CANONICAL RUN = z1/test_10k_1 (10000 spectra, redshift ±300 km/s matched to training),
+#                 M1a config (mu_only_baseline_mag205_225.yaml) + ckpt epoch=190 snr_mu_x=123.
+# ⚠️ 历史 bug (2026-06-21 已修): inference.py 的 CANONICAL_CONFIG/CKPT 默认曾指向
+#    旧 E1 baseline/ep65 → 加载 M1a ckpt 出垃圾 mu_x → 错 EW。任何重算必须确认用 M1a config。
+#
+# REGEN (volta04, specvit env, repo /home/swei20/R_abuv-Propulsion/research/BlindSpotDenoiser):
+#   D=/datascope/subaru/user/swei20/blindspot/results
+#   # SNR 分布 (snrlin):
+#   python3 -c "from dist..." 见 dist_M1a_canonical (test_10k_1, M1a config)
+#   # EW/polarity/integrity/O2 (M1-M9):
+#   python3 scripts/inference.py --test-path .../z1/.../test_10k_1/dataset.h5 \
+#       --num-test-samples 10000 --n-realizations 1 --config configs/mu_only_baseline_mag205_225.yaml --out $D/sentinel_regen
+#   # EW bootstrap CI:
+#   python3 scripts/sec5_4_ew_paired_bootstrap_ci.py --test_split .../test_10k_1/dataset.h5 --num_samples 10000 --out_dir $D/sentinel_ew_ci
+#
+# unified-run source (already computed): $D/unified_test10k_z1_2026-06-20/ + $D/sec5_4_ew_ci_z1_10k_FIXED_2026-06-21/
+
+sentinels:
+  - id: snr_headline_noisy
+    value: "7.6"
+    claim: "noisy-input mean reconstruction S/N (linear norm-ratio)"
+    source: "dist_M1a/dist_summary.noisy_input_lin.mean=7.628"
+    regex: 'reconstruction S/N rises from \$([0-9.]+)\$ on the noisy input'
+  - id: snr_headline_denoised
+    value: "122"
+    claim: "blindspot-output mean reconstruction S/N"
+    source: "dist_M1a/dist_summary.denoised_output_lin.mean=122.28"
+    regex: 'on the noisy input to \$([0-9]+)\$ on the blindspot output'
+  - id: data_summary_test_spectra
+    value: "10{,}000"
+    claim: "paper canonical reconstruction test split size"
+    source: "z1/test_10k_1 contains 10000 spectra"
+    regex: 'Train / validation / test spectra & \$200\{,\}000\$ / \$1\{,\}000\$ / \$([0-9\{,\}]+)\$'
+  - id: data_summary_realization
+    value: "single"
+    claim: "paper canonical noise-realization protocol"
+    source: "z1/test_10k_1 single realization per spectrum"
+    regex: 'Test-set noise realizations & ([a-z]+) realization per test spectrum'
+  - id: contract_single_realization
+    value: "one"
+    claim: "evaluation protocol uses one noise realization per spectrum"
+    source: "z1/test_10k_1 single realization per spectrum"
+    regex: 'reconstruction test split of \$10\{,\}000\$ spectra with ([a-z]+) noise realization per spectrum'
+  - id: ablation_supervised
+    value: "154"
+    claim: "supervised U-Net clean-target reference S/N"
+    source: "dist_E2_supervised.denoised_lin.mean=153.94"
+    regex: 'Supervised U-Net.*?clean-target ceiling\s*&\s*\$([0-9]+)\$\s*&\s*\$136\$'
+  - id: integrity_perm
+    value: "1.19"
+    claim: "cross-spectrum permutation max central-pixel deviation (×1e-7)"
+    source: "main_blindspot/blindspot_integrity_audit.permutation.delta_at_center_max=1.19e-7"
+    regex: 'Cross-spectrum permutation & \$3\$ & \$64\$ & \$([0-9.]+)\\times10\^\{-7\}'
+  - id: integrity_occ
+    value: "1.49"
+    claim: "per-spectrum mean-replacement max central-pixel deviation (×1e-7)"
+    source: "main_blindspot/blindspot_integrity_audit.occlusion.delta_at_center_max=1.49e-7"
+    regex: 'Per-spectrum mean replacement & \$3\$ & \$64\$ & \$([0-9.]+)\\times10\^\{-7\}'
+  - id: polarity_noisy
+    value: "0.276"
+    claim: "noisy-input continuum-relative polarity-flip rate (all pixels)"
+    source: "main_blindspot/polarity_test.all.flip_rate_noisy=0.2761"
+    regex: 'All non-continuum pixels & \$([0-9.]+)\$ & \$\\mathbf'
+  - id: polarity_denoised
+    value: "0.00302"
+    claim: "blindspot-output polarity-flip rate (all pixels)"
+    source: "main_blindspot/polarity_test.all.flip_rate_denoised=0.00302"
+    regex: 'All non-continuum pixels & \$[0-9.]+\$ & \$\\mathbf\{([0-9.]+)\}'
+  - id: ew_8498_noisy
+    value: "0.737"
+    claim: "Ca II 8498 noisy-input relative EW error (median)"
+    source: "sec5_4_FIXED.CaII_T1.noisy_median=0.7366"
+    regex: '8498\$~\\AA\{\} & \$([0-9.]+)\$ & \$\\mathbf'
+  - id: ew_8498_denoised
+    value: "0.121"
+    claim: "Ca II 8498 blindspot relative EW error (median)"
+    source: "sec5_4_FIXED.CaII_T1.denoised_median=0.1210 (M1a config; E1-config bug gave 0.26)"
+    regex: '8498\$~\\AA\{\} & \$[0-9.]+\$ & \$\\mathbf\{([0-9.]+)\}'
+  - id: ew_8542_denoised
+    value: "0.098"
+    claim: "Ca II 8542 blindspot relative EW error (median)"
+    source: "sec5_4_FIXED.CaII_T2.denoised_median=0.0979"
+    regex: '8542\$~\\AA\{\} & \$[0-9.]+\$ & \$\\mathbf\{([0-9.]+)\}'
+  - id: ew_8662_denoised
+    value: "0.147"
+    claim: "Ca II 8662 blindspot relative EW error (median)"
+    source: "sec5_4_FIXED.CaII_T3.denoised_median=0.1466"
+    regex: '8662\$~\\AA\{\} & \$[0-9.]+\$ & \$\\mathbf\{([0-9.]+)\}'
+  - id: o2_noisy
+    value: "0.16"
+    claim: "O2 A-band window-restricted noisy S/N (linear)"
+    source: "main_blindspot/hard_window_metric.snr_noisy_dB=-16.19 -> 10^(dB/20)=0.16"
+    regex: 'Window-restricted reconstruction S/N & \$([0-9.]+)\$ & \$\\mathbf'
+  - id: o2_denoised
+    value: "3.6"
+    claim: "O2 A-band window-restricted blindspot S/N (linear)"
+    source: "main_blindspot/hard_window_metric.snr_denoised_dB=11.10 -> 3.6"
+    regex: 'Window-restricted reconstruction S/N & \$0.16\$ & \$\\mathbf\{([0-9.]+)\}'
+  - id: baseline_wavelet
+    value: "26.6"
+    claim: "wavelet BayesShrink mean reconstruction S/N"
+    source: "baselines_e1/summary.wavelet_db4_bayes_l5.recon_snr_linear_mean=26.57"
+    regex: 'Wavelet BayesShrink & \$([0-9.]+)\$'
+  - id: baseline_noisy_pca
+    value: "54.0"
+    claim: "noisy-trained PCA k=16 mean reconstruction S/N"
+    source: "baselines_e1/summary.noisy_pca_k16.recon_snr_linear_mean=54.00"
+    regex: 'Noisy-PCA, \$k\\!=\\!16\$ & \$([0-9.]+)\$'
